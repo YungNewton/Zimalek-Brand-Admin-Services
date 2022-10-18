@@ -4,6 +4,6 @@ import com.zmarket.brandadminservice.modules.brand.dtos.BusinessVerificationResp
 import com.zmarket.brandadminservice.modules.brand.enums.BusinessType;
 
 public interface BusinessVerificationService {
-    BusinessVerificationResponse verify(String businessNumber, BusinessType businessType);
+    BusinessVerificationResponse verify(String businessNumber, BusinessType businessType,String businessName);
     boolean canApply(String slug );
 }

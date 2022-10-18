@@ -4,7 +4,7 @@ import com.zmarket.brandadminservice.modules.security.JwtAccessDeniedHandler;
 import com.zmarket.brandadminservice.modules.security.JwtAuthenticationEntryPoint;
 import com.zmarket.brandadminservice.modules.security.UserModelDetailsService;
 import com.zmarket.brandadminservice.modules.security.jwt.JWTConfigurer;
-import com.zmarket.brandadminservice.modules.security.jwt.TokenProvider;
+import com.zmarket.brandadminservice.modules.security.jwt.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -26,7 +26,7 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final TokenProvider tokenProvider;
+    private final CurrentUser currentUser;
 
     private final UserModelDetailsService userModelDetailsService;
     private final CorsFilter corsFilter;
@@ -82,7 +82,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private JWTConfigurer securityConfigurerAdapter() {
-        return new JWTConfigurer(tokenProvider, userModelDetailsService);
+        return new JWTConfigurer(currentUser, userModelDetailsService);
     }
 
     @Override

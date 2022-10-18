@@ -38,7 +38,7 @@ public class Brand {
     @Enumerated(EnumType.STRING)
     private BusinessType businessType;
 
-    private String domainUrl;
+    private String handle;
 
     private String address;
 

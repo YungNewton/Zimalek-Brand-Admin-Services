@@ -10,6 +10,6 @@ public interface BusinessCategoryService {
     BusinessCategory getById(Long id);
     List<BusinessCategory> getAll();
     BusinessCategory update(Long id,BusinessCategoryDto dto);
-    Object delete(Long id);
+    void delete(Long id);
 
 }

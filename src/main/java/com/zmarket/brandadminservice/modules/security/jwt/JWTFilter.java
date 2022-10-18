@@ -23,12 +23,12 @@ public class JWTFilter extends GenericFilterBean {
 
    public static final String AUTHORIZATION_HEADER = "Authorization";
 
-   private TokenProvider tokenProvider;
+   private CurrentUser currentUser;
 
    private UserModelDetailsService userModelDetailsService;
 
-   public JWTFilter(TokenProvider tokenProvider, UserModelDetailsService userModelDetailsService) {
-      this.tokenProvider = tokenProvider;
+   public JWTFilter(CurrentUser currentUser, UserModelDetailsService userModelDetailsService) {
+      this.currentUser = currentUser;
       this.userModelDetailsService = userModelDetailsService;
    }
 
@@ -38,12 +38,12 @@ public class JWTFilter extends GenericFilterBean {
       String jwt = resolveToken(httpServletRequest);
       String requestURI = httpServletRequest.getRequestURI();
 
-      if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+      if (StringUtils.hasText(jwt) && currentUser.validateToken(jwt)) {
          UserDetailsImpl userDetails = userModelDetailsService.loadUserByUsername(jwt);
          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
          SecurityContextHolder.getContext().setAuthentication(authentication);
-         tokenProvider.setUserDetails(userDetails);
+         currentUser.setUserDetails(userDetails);
          LOG.debug("set Authentication to security context for '{}', uri: {}", userDetails.getEmail(), requestURI);
       } else {
          LOG.debug("no valid JWT token found, uri: {}", requestURI);

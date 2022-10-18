@@ -32,7 +32,7 @@ public class VerifyMeBusinessVerificationService implements BusinessVerification
     private String verifymeSecretKey;
 
     @Override
-    public BusinessVerificationResponse verify(String businessNumber, BusinessType businessType) {
+    public BusinessVerificationResponse verify(String businessNumber, BusinessType businessType,String businessName) {
 
         String url = verifymeBaseUrl + "/verifications/identities/cac";
         VerifyMeBusinessRequest request = getVerifyBusinessRequest(businessNumber, businessType);
@@ -41,7 +41,8 @@ public class VerifyMeBusinessVerificationService implements BusinessVerification
             throw new BadRequestException("Invalid Business registration number");
         }
 
-        HttpEntity<VerifyMeBusinessRequest> entity = new HttpEntity<>(request,getHttpHeader(verifymeSecretKey));
+        HttpEntity<VerifyMeBusinessRequest> entity = new HttpEntity<>(request,
+                getHttpHeader(verifymeSecretKey));
 
         try {
             ResponseEntity<VerifyMeResponse> responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, VerifyMeResponse.class);

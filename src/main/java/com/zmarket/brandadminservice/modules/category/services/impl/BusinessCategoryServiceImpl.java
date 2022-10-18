@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -54,11 +53,7 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService{
     public BusinessCategory update(Long id,BusinessCategoryDto dto) {
         Optional<BusinessCategory> optionalBusiness = businessCategoryRepository.findById(id);
         if (optionalBusiness.isEmpty()){
-            throw new BadRequestException("Category with name doesn't exists");
-        }
-        Optional<BusinessCategory> optionalBusiness2 = businessCategoryRepository.findByName(dto.getName());
-        if (optionalBusiness2.isPresent() && !Objects.equals(optionalBusiness2.get().getId(), optionalBusiness.get().getId())){
-            throw new BadRequestException("Category with name already exists");
+            throw new BadRequestException("Category with id doesn't exists");
         }
         BusinessCategory category = optionalBusiness.get();
         category.setName(dto.getName());
@@ -69,13 +64,12 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService{
     }
 
     @Override
-    public Object delete(Long id) {
+    public void delete(Long id) {
         Optional<BusinessCategory> optionalBusiness = businessCategoryRepository.findById(id);
         if (optionalBusiness.isEmpty()){
             throw new NotFoundException("Category with id not found");
         }
         businessCategoryRepository.delete(optionalBusiness.get());
         log.info("category with id deleted");
-        return null;
     }
 }

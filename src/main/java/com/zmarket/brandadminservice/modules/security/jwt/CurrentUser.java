@@ -16,7 +16,7 @@ import java.security.Key;
 
 @Slf4j
 @Component
-public class TokenProvider implements InitializingBean {
+public class CurrentUser implements InitializingBean {
 
    @Value("${jwt.base64-secret}")
    private String base64Secret;

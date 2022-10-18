@@ -9,14 +9,21 @@ import java.io.Serializable;
 
 @Data
 public class BrandDto implements Serializable {
+
+    @NotBlank(message =  "Brand name is required")
+    private String name;
+
+    @NotNull(message = "categoryId is required")
+    private Long categoryId;
+
     @NotBlank(message = "Business number is required")
     private String businessNumber;
 
     @NotNull(message = "Business type is required")
     private BusinessType businessType;
 
-    @NotBlank(message = "Business domain is required")
-    private String domainUrl;
+    @NotBlank(message = "Business handle is required")
+    private String handle;
 
     @NotBlank(message = "Business address is required")
     private String address;
@@ -28,7 +35,4 @@ public class BrandDto implements Serializable {
     private String twitterUrl;
 
     private String logo;
-
-    @NotNull(message = "Category is required")
-    private Long categoryCategoryId;
 }
