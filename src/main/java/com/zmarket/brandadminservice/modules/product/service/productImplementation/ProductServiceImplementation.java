@@ -4,6 +4,8 @@ import com.zmarket.brandadminservice.exceptions.BadRequestException;
 import com.zmarket.brandadminservice.exceptions.ForbiddenException;
 import com.zmarket.brandadminservice.exceptions.NoContentException;
 import com.zmarket.brandadminservice.exceptions.NotFoundException;
+import com.zmarket.brandadminservice.modules.brand.models.Brand;
+import com.zmarket.brandadminservice.modules.brand.repositories.BrandRepository;
 import com.zmarket.brandadminservice.modules.colour.dto.ColourDto;
 import com.zmarket.brandadminservice.modules.colour.model.Colour;
 import com.zmarket.brandadminservice.modules.colour.repository.ColourRepository;
@@ -19,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -36,6 +39,7 @@ import java.util.*;
 public class ProductServiceImplementation implements ProductServices {
 
     private final ProductRepository productRepository;
+    private final BrandRepository brandRepository;
     private final CurrentUser currentUser;
     private final ImageRepository imageRepository;
 
@@ -192,5 +196,45 @@ public class ProductServiceImplementation implements ProductServices {
         Set<Image> images = new HashSet<>();
         imageUrls.forEach(m -> images.add(imageRepository.save(new Image(m,new Date()))));
         return images;
+    }
+
+    @Override
+    public Page<Product> getProductByBrandId(Long brandId, LocalDate startDate, LocalDate endDate, String name, String color, String category, BigDecimal price, Pageable pageable) {
+        Optional<Brand> brand = brandRepository.findById(brandId);
+        if(brand.isEmpty()){
+            throw new NotFoundException("Brand does not exist");
+        }
+
+        LocalDateTime start = Objects.nonNull(startDate) ? LocalDateTime.of(startDate, LocalTime.MIN) : null;
+        LocalDateTime end = Objects.nonNull(startDate) ? LocalDateTime.of(endDate, LocalTime.MAX) : null;
+
+        if (Objects.isNull(start) && Objects.isNull(end) && Objects.isNull(name) && Objects.isNull(color) && Objects.isNull(category) && Objects.isNull(price)) {
+            Page<Product> products = productRepository.findByBrand(brand.get(), pageable);
+            if(products.isEmpty()){
+                throw new NoContentException();
+            }
+
+            return products;
+        }
+
+        CriteriaBuilder qb = entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<Product> cq = qb.createQuery(Product.class);
+
+        Root<Product> root = cq.from(Product.class);
+
+        List<Predicate> predicates = getPredicates(start, end, name, color, category, price, qb, root, cq);
+
+        predicates.add(qb.equal(root.get("brand"), brand.get()));
+
+        cq.select(root).where(predicates.toArray(new Predicate[]{}));
+
+        List<Product> res = entityManager.createQuery(cq).getResultList();
+
+        if (res.isEmpty()) {
+            throw new NoContentException();
+        }
+
+        return new PageImpl<>(res, pageable, res.size());
     }
 }

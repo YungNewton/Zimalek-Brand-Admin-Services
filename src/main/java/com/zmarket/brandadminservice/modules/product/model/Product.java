@@ -1,11 +1,12 @@
 package com.zmarket.brandadminservice.modules.product.model;
 
+import com.zmarket.brandadminservice.modules.brand.models.Brand;
 import com.zmarket.brandadminservice.modules.colour.model.Colour;
+import com.zmarket.brandadminservice.modules.images.model.Image;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
@@ -27,17 +28,20 @@ public class Product {
     private String description;
     private boolean isNew;
 
+    @ManyToOne
+    private Brand brand;
+
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST,CascadeType.REFRESH})
     @JoinTable(
-            name = "shop_product_image",
-            joinColumns = @JoinColumn(name = "shop_product_id"),
+            name = "brand_product_image",
+            joinColumns = @JoinColumn(name = "brand_product_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id"))
     private Set<Image> images;
 
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST,CascadeType.REFRESH})
     @JoinTable(
-            name = "shop_product_colour",
-            joinColumns = @JoinColumn(name = "shop_product_id"),
+            name = "brand_product_colour",
+            joinColumns = @JoinColumn(name = "brand_product_id"),
             inverseJoinColumns = @JoinColumn(name = "colour_id"))
     private Set<Colour> colours;
 

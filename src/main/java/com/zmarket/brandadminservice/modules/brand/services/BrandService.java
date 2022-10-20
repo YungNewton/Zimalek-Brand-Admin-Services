@@ -3,16 +3,15 @@ package com.zmarket.brandadminservice.modules.brand.services;
 import com.zmarket.brandadminservice.modules.brand.dtos.BrandDto;
 import com.zmarket.brandadminservice.modules.brand.dtos.BusinessVerificationResponse;
 import com.zmarket.brandadminservice.modules.brand.models.Brand;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.zmarket.brandadminservice.modules.product.dto.ProductDto;
+import com.zmarket.brandadminservice.modules.product.model.Product;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.List;
 
 public interface BrandService {
     BusinessVerificationResponse verifyBusiness(String number, String name, String type);
     Brand createBrand(BrandDto request);
     Brand getById(Long id);
-    Page<Brand> getAll(LocalDate start, LocalDate end, String name, String color, String category, BigDecimal price, Pageable pageable);
+    List<Brand> getAll();
     Brand update(Long id, BrandDto dto);
 }

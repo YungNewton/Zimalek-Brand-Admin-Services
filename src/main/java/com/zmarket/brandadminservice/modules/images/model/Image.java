@@ -12,7 +12,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-@Table(name = "images")
+@Table(name = "brand_images")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Image {

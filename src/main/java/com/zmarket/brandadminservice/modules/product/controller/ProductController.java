@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/product")
@@ -32,6 +31,20 @@ public class ProductController {
     @GetMapping("/{id}")
     public Product getById(@PathVariable Long id){
         return productServices.getById(id);
+    }
+    @GetMapping("/product/{brandId}")
+    public Page<Product> getProductByBrandId(@PathVariable Long brandId,
+                                                @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate start,
+                                                @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end,
+                                                @RequestParam(required = false) String name,
+                                                @RequestParam(required = false) String color,
+                                                @RequestParam(required = false) String category,
+                                                @RequestParam(required = false) BigDecimal price,
+                                                @PageableDefault(size = 7 ) @SortDefault.SortDefaults({
+                                                        @SortDefault(sort = "productName", direction = Sort.Direction.ASC),
+                                                        @SortDefault(sort = "createdAt", direction = Sort.Direction.DESC)
+                                                }) Pageable pageable){
+        return productServices.getProductByBrandId(brandId, start, end, name, color, category, price, pageable);
     }
     @GetMapping
     public Page<Product> getAll(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate start,

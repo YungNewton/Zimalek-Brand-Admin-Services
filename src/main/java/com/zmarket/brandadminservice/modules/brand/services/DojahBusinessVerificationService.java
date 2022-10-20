@@ -20,13 +20,13 @@ public class DojahBusinessVerificationService implements BusinessVerificationSer
 
     private final RestTemplate restTemplate;
 
-    @Value("${dojah.base.url}")
+    @Value("${dojah.secret.key}")
     private String appSecretKey;
 
-    @Value("${dojah.base.url}")
+    @Value("${dojah.app.id}")
     private String appId;
 
-    @Value("${dojah.secret.key}")
+    @Value("${dojah.base.url}")
     private String dojahBaseUrl;
 
 

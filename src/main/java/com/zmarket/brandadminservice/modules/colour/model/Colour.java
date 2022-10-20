@@ -12,7 +12,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-@Table(name = "colours")
+@Table(name = "brand_colours")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Colour {
