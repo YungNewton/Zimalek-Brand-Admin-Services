@@ -6,6 +6,8 @@ import com.zmarket.brandadminservice.exceptions.NoContentException;
 import com.zmarket.brandadminservice.exceptions.NotFoundException;
 import com.zmarket.brandadminservice.modules.brand.models.Brand;
 import com.zmarket.brandadminservice.modules.brand.repositories.BrandRepository;
+import com.zmarket.brandadminservice.modules.category.models.BusinessCategory;
+import com.zmarket.brandadminservice.modules.category.repositories.BusinessCategoryRepository;
 import com.zmarket.brandadminservice.modules.colour.dto.ColourDto;
 import com.zmarket.brandadminservice.modules.colour.model.Colour;
 import com.zmarket.brandadminservice.modules.colour.repository.ColourRepository;
@@ -21,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -39,26 +40,43 @@ import java.util.*;
 public class ProductServiceImplementation implements ProductServices {
 
     private final ProductRepository productRepository;
+
     private final BrandRepository brandRepository;
+
     private final CurrentUser currentUser;
+
     private final ImageRepository imageRepository;
 
     private final ColourRepository colourRepository;
+
+    private final BusinessCategoryRepository businessCategoryRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
 
     @Override
-    public Product createNewProduct(ProductDto request) {
-        Optional<Product> optionalProduct = productRepository.findByProductName(request.getProductName());
-        if (optionalProduct.isPresent()){
-            throw new BadRequestException("Category with name already exists");
+    public Product createNewProduct(ProductDto request, Long brandId) {
+        Optional<Brand> optionalBrand = brandRepository.findByIdAndUserId(brandId, currentUser.getId());
+        if (optionalBrand.isEmpty()){
+            throw new ForbiddenException("you are authorized to view this resource");
         }
+
+
         if(Objects.isNull(request.getImageUrls()) || request.getImageUrls().isEmpty()){
             throw new BadRequestException("Product image is required");
         }
+
+        BusinessCategory productCategory = businessCategoryRepository.findById(request.getCategory()).orElse(optionalBrand.get().getCategory());
+
+        Set<Image> images = saveImages(request.getImageUrls());
+        Set<Colour> colours = saveColours(request.getColours());
+
         Product product = new Product();
+        product.setColours(colours);
+        product.setImages(images);
+        product.setBrand(optionalBrand.get());
+        product.setCategory(productCategory.getName());
         product.setProductName(request.getProductName());
         product.setDescription(request.getDescription());
         product.setCreatedAt(new Date());
@@ -67,8 +85,7 @@ public class ProductServiceImplementation implements ProductServices {
         product.setQuantity(request.getQuantity());
         product.setUserId(currentUser.getId());
         product.setUnitPrice(request.getUnitPrice());
-        Set<Image> images = saveImages(request.getImageUrls());
-        Set<Colour> colours = saveColours(request.getColours());
+
         product = productRepository.save(product);
         return product;
     }
@@ -81,39 +98,6 @@ public class ProductServiceImplementation implements ProductServices {
         return optionalProduct.get();
     }
 
-    private List<Predicate> getPredicates(LocalDateTime start, LocalDateTime end, String name, String colour, String category, BigDecimal price, CriteriaBuilder qb, Root<Product> root, CriteriaQuery<Product> cq) {
-        List<Predicate> predicates = new ArrayList<>();
-
-        if (Objects.nonNull(start)) {
-            predicates.add(qb.greaterThanOrEqualTo(root.get("createdAt"), start));
-        }
-
-        if (Objects.nonNull(end)) {
-            predicates.add(qb.lessThan(root.get("createdAt"), end));
-        }
-
-        if (Objects.nonNull(name)) {
-            predicates.add(qb.equal(root.get("productName"), name));
-        }
-
-        if (Objects.nonNull(category)) {
-            predicates.add(qb.equal(root.get("category"), category));
-        }
-
-        if (Objects.nonNull(price)) {
-            predicates.add(qb.equal(root.get("price"), price));
-        }
-
-        Subquery<Long> subquery = cq.subquery(Long.class);
-        Root<Product> subqueryStudent = subquery.from(Product.class);
-        Join<Colour, Product> subqueryCourse = subqueryStudent.join("colours");
-
-        subquery.select(subqueryStudent.get("id")).where(qb.equal(subqueryCourse.get("name"), colour));
-
-        predicates.add(qb.in(root.get("id")).value(subquery));
-
-        return predicates;
-    }
 
     @Override
     public Page<Product> getAll(LocalDate startDate, LocalDate endDate, String name, String color, String category, BigDecimal price, Pageable pageable) {
@@ -149,40 +133,57 @@ public class ProductServiceImplementation implements ProductServices {
     }
 
     @Override
-    public Product update(Long id, ProductDto dto) {
+    public Product update(Long id, ProductDto dto, Long brandId) {
+        Optional<Brand> optionalBrand = brandRepository.findByIdAndUserId(brandId, currentUser.getId());
+        if (optionalBrand.isEmpty()){
+            throw new ForbiddenException("you are authorized to view this resource");
+        }
 
-        Optional<Product> optionalProduct = productRepository.findByIdAndUserId(id, currentUser.getId());
-
+        Optional<Product> optionalProduct = productRepository.findByBrandAndId(optionalBrand.get(), id);
         if (optionalProduct.isEmpty()){
             throw new ForbiddenException("you are not authorized to view this resource");
         }
+
+        BusinessCategory productCategory = businessCategoryRepository.findById(dto.getCategory()).orElse(optionalBrand.get().getCategory());
+
+        imageRepository.deleteAll(optionalProduct.get().getImages());
+        colourRepository.deleteAll(optionalProduct.get().getColours());
+
+        Set<Image> images = saveImages(dto.getImageUrls());
+        Set<Colour> colours = saveColours(dto.getColours());
 
         Product product = optionalProduct.get();
         product.setNew(dto.isNew());
         product.setProductId(dto.getProductId());
         product.setQuantity(dto.getQuantity());
         product.setUnitPrice(dto.getUnitPrice());
-        optionalProduct.get().setUpdatedAt(new Date());
+        product.setUpdatedAt(new Date());
         product.setProductName(dto.getProductName());
         product.setDescription(dto.getDescription());
-        Set<Image> images = saveImages(dto.getImageUrls());
-        Set<Colour> colours = saveColours(dto.getColours());
+        product.setColours(colours);
+        product.setImages(images);
+        product.setBrand(optionalBrand.get());
+        product.setCategory(productCategory.getName());
+
         product = productRepository.save(product);
         return product;
     }
 
     @Override
-    public void delete(Long id) {
-
-        Optional<Product> optionalProduct = productRepository.findByIdAndUserId(id, currentUser.getId());
-
-        if (optionalProduct.isEmpty()){
+    public void delete(Long id, Long brandId) {
+        Optional<Brand> optionalBrand = brandRepository.findByIdAndUserId(brandId, currentUser.getId());
+        if (optionalBrand.isEmpty()){
             throw new ForbiddenException("you are authorized to view this resource");
         }
 
+        Optional<Product> optionalProduct = productRepository.findByBrandAndId(optionalBrand.get(), id);
+        if (optionalProduct.isEmpty()){
+            throw new ForbiddenException("you are not authorized to view this resource");
+        }
+
         productRepository.delete(optionalProduct.get());
-        log.info("category with id deleted");
     }
+
     private Set<Colour> saveColours(Set<ColourDto> dto) {
         if (Objects.isNull(dto) || dto.isEmpty()) {
             return new HashSet<>();
@@ -237,4 +238,39 @@ public class ProductServiceImplementation implements ProductServices {
 
         return new PageImpl<>(res, pageable, res.size());
     }
+
+    private List<Predicate> getPredicates(LocalDateTime start, LocalDateTime end, String name, String colour, String category, BigDecimal price, CriteriaBuilder qb, Root<Product> root, CriteriaQuery<Product> cq) {
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (Objects.nonNull(start)) {
+            predicates.add(qb.greaterThanOrEqualTo(root.get("createdAt"), start));
+        }
+
+        if (Objects.nonNull(end)) {
+            predicates.add(qb.lessThan(root.get("createdAt"), end));
+        }
+
+        if (Objects.nonNull(name)) {
+            predicates.add(qb.equal(root.get("productName"), name));
+        }
+
+        if (Objects.nonNull(category)) {
+            predicates.add(qb.equal(root.get("category"), category));
+        }
+
+        if (Objects.nonNull(price)) {
+            predicates.add(qb.equal(root.get("price"), price));
+        }
+
+        Subquery<Long> subquery = cq.subquery(Long.class);
+        Root<Product> subqueryStudent = subquery.from(Product.class);
+        Join<Colour, Product> subqueryCourse = subqueryStudent.join("colours");
+
+        subquery.select(subqueryStudent.get("id")).where(qb.equal(subqueryCourse.get("name"), colour));
+
+        predicates.add(qb.in(root.get("id")).value(subquery));
+
+        return predicates;
+    }
+
 }

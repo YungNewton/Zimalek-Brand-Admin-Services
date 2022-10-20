@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public interface ProductServices {
-    Product createNewProduct(ProductDto request);
+    Product createNewProduct(ProductDto request, Long brandId);
     Product getById(Long id);
     Page<Product> getAll(LocalDate start, LocalDate end, String name, String color, String category, BigDecimal price, Pageable pageable);
     Page<Product> getProductByBrandId(Long brandId, LocalDate startDate, LocalDate endDate, String name, String color, String category, BigDecimal price, Pageable pageable);
-    Product update(Long id, ProductDto dto);
-    void delete(Long id);
+    Product update(Long id, ProductDto dto, Long brandId);
+    void delete(Long id, Long brandId);
 }

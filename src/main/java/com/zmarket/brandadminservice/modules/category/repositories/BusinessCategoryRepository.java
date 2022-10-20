@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface BusinessCategoryRepository extends JpaRepository<BusinessCategory, Long> {
     Optional<BusinessCategory> findByName(String name);
+    Optional<BusinessCategory> findFirstByName(String category);
 }

@@ -12,20 +12,28 @@ import java.util.Date;
 import java.util.Set;
 
 @Entity
-@Table(name = "brand_product")
+@Table(name = "brand_products")
 @Getter
 @Setter
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     private String productId;
+
     private String productName;
+
     private BigDecimal unitPrice;
+
     private long quantity;
+
     private Long userId;
-    private Long brandId;
+
     private String description;
+
+    private String category;
+
     private boolean isNew;
 
     @ManyToOne

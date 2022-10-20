@@ -8,21 +8,12 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Data
-public class BrandDto implements Serializable {
-
-    @NotBlank(message =  "Brand name is required")
-    private String name;
+public class UpdateBrandDto implements Serializable {
 
     @NotNull(message = "categoryId is required")
     private Long categoryId;
 
-    @NotBlank(message = "Business number is required")
-    private String businessNumber;
-
     private BusinessType businessType;
-
-    @NotBlank(message = "Business handle is required")
-    private String handle;
 
     @NotBlank(message = "Business address is required")
     private String address;

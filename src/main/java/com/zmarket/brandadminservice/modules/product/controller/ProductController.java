@@ -24,14 +24,12 @@ import java.time.LocalDate;
 public class ProductController {
     private final ProductServices productServices;
 
-    @PostMapping
-    public Product create(@RequestBody @Valid ProductDto productDto ){
-        return productServices.createNewProduct(productDto);
-    }
+
     @GetMapping("/{id}")
     public Product getById(@PathVariable Long id){
         return productServices.getById(id);
     }
+
     @GetMapping("/product/{brandId}")
     public Page<Product> getProductByBrandId(@PathVariable Long brandId,
                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate start,
@@ -58,13 +56,5 @@ public class ProductController {
                                         @SortDefault(sort = "createdAt", direction = Sort.Direction.DESC)
                                 }) Pageable pageable){
         return productServices.getAll(start, end, name, color, category, price, pageable);
-    }
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Long id){
-        productServices.delete(id);
-    }
-    @PutMapping("/{id}")
-    public Product update(@PathVariable("id") Long id,@Valid @RequestBody ProductDto productDto) {
-        return productServices.update(id,productDto);
     }
 }

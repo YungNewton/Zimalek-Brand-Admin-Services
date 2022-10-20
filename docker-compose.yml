@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  userapi:
+    build: .
+    restart: always
+    container_name: brand-admin-service
+    entrypoint: "java -Djava.security.egd=file:/dev/./urandom -jar /app.jar"
+    ports:
+      - 8082:3003

@@ -19,7 +19,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
+import java.util.List;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -29,7 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final CurrentUser currentUser;
 
     private final UserModelDetailsService userModelDetailsService;
-    private final CorsFilter corsFilter;
+    private final MyCorsConfig corsFilter;
     private final JwtAuthenticationEntryPoint authenticationErrorHandler;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
@@ -53,10 +59,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf().disable()
+        httpSecurity.csrf().disable().cors().and()
 
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationErrorHandler)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
@@ -70,12 +75,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .authorizeRequests()
-                .antMatchers("/brand").permitAll()
                 .antMatchers("/documentation/**", "/swagger-resources/**", "/v3/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                .antMatchers("/user/**").hasAuthority("ROLE_USER")
-                .antMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-
-                .anyRequest().authenticated()
+                .antMatchers("/admin/**").hasAuthority("ROLE_BRAND_SELLER")
+                .antMatchers("/admin/**").authenticated()
+                .anyRequest().permitAll()
 
                 .and()
                 .apply(securityConfigurerAdapter());
@@ -89,6 +92,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("*"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
 
