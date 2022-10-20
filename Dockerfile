@@ -1,8 +1,5 @@
 FROM openjdk:11-jre-slim-buster
 
-# install bash
-RUN \
-  apk add --no-cache bash
 
 RUN mkdir /uploads
 # install java
