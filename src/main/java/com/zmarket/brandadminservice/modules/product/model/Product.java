@@ -53,6 +53,19 @@ public class Product {
             inverseJoinColumns = @JoinColumn(name = "colour_id"))
     private Set<Colour> colours;
 
+    private int totalOneStarRating;
+
+    private int totalTwoStarRating;
+
+    private int totalThreeStarRating;
+
+    private int totalFourStarRating;
+
+    private int totalFiveStarRating;
+
+    private int totalStarRating;
+
+    private int avgStarRating;
 
     @Column(name = "created_at")
     private Date createdAt;
