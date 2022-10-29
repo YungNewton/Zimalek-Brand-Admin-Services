@@ -1,7 +1,7 @@
-package com.zmarket.brandadminservice.modules.productrating.model;
+package com.zmarket.brandadminservice.modules.brandrating.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.zmarket.brandadminservice.modules.product.model.Product;
+import com.zmarket.brandadminservice.modules.brand.models.Brand;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +13,10 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-@Table(name = "brand_product_ratings")
+@Table(name = "brand_ratings")
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductRating {
-
+public class BrandRating {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,7 +33,7 @@ public class ProductRating {
     private boolean anonymous;
 
     @ManyToOne
-    private Product product;
+    private Brand brand;
 
     @Column(name = "created_at")
     private Date createdAt;
@@ -42,5 +41,4 @@ public class ProductRating {
     @JsonIgnore
     @Column(name = "updated_at")
     private Date updatedAt;
-
 }

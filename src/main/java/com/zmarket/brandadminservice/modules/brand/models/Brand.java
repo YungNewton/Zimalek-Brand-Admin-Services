@@ -56,6 +56,21 @@ public class Brand {
 
     private String logo;
 
+    private int totalOneStarRating;
+
+    private int totalTwoStarRating;
+
+    private int totalThreeStarRating;
+
+    private int totalFourStarRating;
+
+    private int totalFiveStarRating;
+
+    private int totalStarRating;
+
+    private int avgStarRating;
+
+
     @JsonIgnore
     @OneToMany(mappedBy = "brand", fetch = FetchType.EAGER)
     private Set<Product> products;
